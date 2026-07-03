@@ -1,0 +1,669 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Dedektif Istanbul API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: cities
+  - name: cases
+  - name: steps
+  - name: progress
+  - name: submissions
+  - name: admin
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /cities:
+    get:
+      operationId: getCities
+      tags: [cities]
+      summary: List available cities
+      responses:
+        "200":
+          description: List of cities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/City"
+
+  /cases:
+    get:
+      operationId: getCases
+      tags: [cases]
+      summary: List cases
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: difficulty
+          in: query
+          schema:
+            type: string
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: List of cases
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Case"
+    post:
+      operationId: createCase
+      tags: [cases]
+      summary: Create a case (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaseInput"
+      responses:
+        "201":
+          description: Created case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+
+  /cases/{id}:
+    get:
+      operationId: getCase
+      tags: [cases]
+      summary: Get case with steps
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Case with steps
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaseWithSteps"
+        "404":
+          description: Not found
+    put:
+      operationId: updateCase
+      tags: [cases]
+      summary: Update a case (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaseUpdate"
+      responses:
+        "200":
+          description: Updated case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Case"
+    delete:
+      operationId: deleteCase
+      tags: [cases]
+      summary: Delete a case (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /cases/{caseId}/steps:
+    get:
+      operationId: getCaseSteps
+      tags: [steps]
+      summary: Get steps for a case
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of steps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CaseStep"
+    post:
+      operationId: createCaseStep
+      tags: [steps]
+      summary: Add a step to a case (admin)
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaseStepInput"
+      responses:
+        "201":
+          description: Created step
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaseStep"
+
+  /cases/{caseId}/steps/{stepId}:
+    put:
+      operationId: updateCaseStep
+      tags: [steps]
+      summary: Update a step (admin)
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: stepId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CaseStepUpdate"
+      responses:
+        "200":
+          description: Updated step
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CaseStep"
+    delete:
+      operationId: deleteCaseStep
+      tags: [steps]
+      summary: Delete a step (admin)
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: stepId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /progress/{userId}:
+    get:
+      operationId: getAllProgress
+      tags: [progress]
+      summary: Get all progress for a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: All progress entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserProgress"
+
+  /progress/{userId}/{caseId}:
+    get:
+      operationId: getCaseProgress
+      tags: [progress]
+      summary: Get progress for a specific case
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Progress for this case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProgress"
+        "404":
+          description: Not started
+    post:
+      operationId: upsertCaseProgress
+      tags: [progress]
+      summary: Start or update case progress
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProgressInput"
+      responses:
+        "200":
+          description: Updated progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProgress"
+
+  /submissions:
+    post:
+      operationId: createSubmission
+      tags: [submissions]
+      summary: Submit photo evidence for a case step
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmissionInput"
+      responses:
+        "200":
+          description: Submission result with match score
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmissionResult"
+
+  /admin/stats:
+    get:
+      operationId: getAdminStats
+      tags: [admin]
+      summary: Get admin dashboard statistics
+      responses:
+        "200":
+          description: Admin statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+
+  /admin/submissions:
+    get:
+      operationId: getAdminSubmissions
+      tags: [admin]
+      summary: Get all submissions (admin)
+      responses:
+        "200":
+          description: List of submissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Submission"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    City:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        caseCount:
+          type: integer
+      required: [id, name, caseCount]
+
+    Case:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        difficulty:
+          type: string
+        category:
+          type: string
+        thumbnailUrl:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        stepCount:
+          type: integer
+        createdAt:
+          type: string
+      required: [id, title, description, city, district, difficulty, category, isActive, stepCount, createdAt]
+
+    CaseWithSteps:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        difficulty:
+          type: string
+        category:
+          type: string
+        thumbnailUrl:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/CaseStep"
+        createdAt:
+          type: string
+      required: [id, title, description, city, district, difficulty, category, isActive, steps, createdAt]
+
+    CaseInput:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        difficulty:
+          type: string
+        category:
+          type: string
+        thumbnailUrl:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+      required: [title, description, city, district, difficulty, category, isActive]
+
+    CaseUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        city:
+          type: string
+        district:
+          type: string
+        difficulty:
+          type: string
+        category:
+          type: string
+        thumbnailUrl:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+
+    CaseStep:
+      type: object
+      properties:
+        id:
+          type: string
+        caseId:
+          type: string
+        order:
+          type: integer
+        type:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        targetImageUrl:
+          type: ["string", "null"]
+        targetLat:
+          type: ["number", "null"]
+        targetLng:
+          type: ["number", "null"]
+        targetRadiusM:
+          type: ["integer", "null"]
+        targetAnswer:
+          type: ["string", "null"]
+        requiredMatchPct:
+          type: integer
+        hint:
+          type: ["string", "null"]
+      required: [id, caseId, order, type, title, description, requiredMatchPct]
+
+    CaseStepInput:
+      type: object
+      properties:
+        order:
+          type: integer
+        type:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        targetImageUrl:
+          type: ["string", "null"]
+        targetLat:
+          type: ["number", "null"]
+        targetLng:
+          type: ["number", "null"]
+        targetRadiusM:
+          type: ["integer", "null"]
+        targetAnswer:
+          type: ["string", "null"]
+        requiredMatchPct:
+          type: integer
+        hint:
+          type: ["string", "null"]
+      required: [order, type, title, description, requiredMatchPct]
+
+    CaseStepUpdate:
+      type: object
+      properties:
+        order:
+          type: integer
+        type:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        targetImageUrl:
+          type: ["string", "null"]
+        targetLat:
+          type: ["number", "null"]
+        targetLng:
+          type: ["number", "null"]
+        targetRadiusM:
+          type: ["integer", "null"]
+        targetAnswer:
+          type: ["string", "null"]
+        requiredMatchPct:
+          type: integer
+        hint:
+          type: ["string", "null"]
+
+    UserProgress:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        caseId:
+          type: string
+        currentStep:
+          type: integer
+        completedSteps:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+        startedAt:
+          type: string
+        completedAt:
+          type: ["string", "null"]
+      required: [id, userId, caseId, currentStep, completedSteps, status, startedAt]
+
+    ProgressInput:
+      type: object
+      properties:
+        userId:
+          type: string
+        currentStep:
+          type: integer
+        completedSteps:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+      required: [userId, currentStep, completedSteps, status]
+
+    SubmissionInput:
+      type: object
+      properties:
+        userId:
+          type: string
+        caseId:
+          type: string
+        stepId:
+          type: string
+        userLat:
+          type: ["number", "null"]
+        userLng:
+          type: ["number", "null"]
+        userAnswer:
+          type: ["string", "null"]
+      required: [userId, caseId, stepId]
+
+    SubmissionResult:
+      type: object
+      properties:
+        id:
+          type: string
+        matchScore:
+          type: integer
+        passed:
+          type: boolean
+        requiredScore:
+          type: integer
+        feedback:
+          type: string
+      required: [id, matchScore, passed, requiredScore, feedback]
+
+    Submission:
+      type: object
+      properties:
+        id:
+          type: string
+        userId:
+          type: string
+        caseId:
+          type: string
+        stepId:
+          type: string
+        matchScore:
+          type: integer
+        passed:
+          type: boolean
+        userLat:
+          type: ["number", "null"]
+        userLng:
+          type: ["number", "null"]
+        createdAt:
+          type: string
+      required: [id, userId, caseId, stepId, matchScore, passed, createdAt]
+
+    AdminStats:
+      type: object
+      properties:
+        totalCases:
+          type: integer
+        activeCases:
+          type: integer
+        totalSubmissions:
+          type: integer
+        passedSubmissions:
+          type: integer
+        citiesWithCases:
+          type: integer
+      required: [totalCases, activeCases, totalSubmissions, passedSubmissions, citiesWithCases]

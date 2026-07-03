@@ -1,0 +1,3 @@
+- [Metro monorepo setup](metro-monorepo.md) — Expo Metro needs watchFolders + nodeModulesPaths + unstable_enableSymlinks to resolve pnpm workspace packages.
+- [TanStack Query v5 queryKey](tanstack-query-v5.md) — useQuery hooks from orval require explicit queryKey inside { query: { queryKey, enabled } } options.
+- [Express TS7030 pattern](express-ts7030.md) — Use `{ res.json(); return; }` or `return void res.json()` to satisfy strict TypeScript in Express async handlers.

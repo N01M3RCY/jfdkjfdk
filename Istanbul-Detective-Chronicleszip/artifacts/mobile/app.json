@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "Dedektif İstanbul",
+    "slug": "mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "mobile",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0A0F"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Dava kanıtı fotoğrafı çekmek için kamera erişimi gerekiyor.",
+        "NSLocationWhenInUseUsageDescription": "Soruşturma konumunuzu doğrulamak için konum erişimi gerekiyor.",
+        "NSPhotoLibraryUsageDescription": "Kanıt fotoğrafları için galeri erişimi gerekiyor."
+      }
+    },
+    "android": {
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.READ_EXTERNAL_STORAGE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": "https://replit.com/"
+        }
+      ],
+      "expo-font",
+      "expo-web-browser",
+      "expo-location",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Kanıt fotoğrafları için galeri erişimi gerekiyor.",
+          "cameraPermission": "Dava kanıtı fotoğrafı çekmek için kamera erişimi gerekiyor."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
